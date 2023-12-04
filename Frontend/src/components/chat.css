@@ -53,4 +53,14 @@ body {
     margin: 20px;
     width: 85%;
   }
-  
+  #sessionBox{
+    /* border: 2px solid blue; */
+    background-color: navy;
+    color: white;
+    font-size: large;
+    padding: 10px;
+    margin: 20px;
+    border-radius: 10px;
+    height: 25px;
+    /* justify-content: center; */
+  }
