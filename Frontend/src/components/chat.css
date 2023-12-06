@@ -10,6 +10,8 @@ body {
 .left-panel {
     flex: 25%; 
     background-color: #f0f0f0; 
+    overflow-y: auto; 
+    max-height: 100vh;   
   } 
   .left-top{
     margin-top: 20px;
@@ -63,4 +65,14 @@ body {
     border-radius: 10px;
     height: 25px;
     /* justify-content: center; */
+  }
+  .chatBox{
+  margin:10px;
+  padding: 10px;
+  }
+  .right-panel-upper {
+    overflow-y: auto; /* Enable vertical scrolling */
+    max-height: 400px; /* Set a maximum height to limit the scrollable area */
+    border: 1px solid #ccc; /* Add a border for better visibility */
+    padding: 10px;
   }

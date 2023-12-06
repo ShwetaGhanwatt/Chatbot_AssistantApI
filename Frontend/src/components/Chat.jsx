@@ -6,9 +6,9 @@ import { createThread } from "../utils/allAssistants";
 import { thread } from "./thread";
 import { useState } from "react";
 import { useEffect } from "react";
-import uuid from 'react-uuid';
 import { messages } from "./messages";
 import { run } from "./run";
+import axios from "axios";
 
 const Chatbot = () => {
     const [userId,setUserId] = useState("xyz")  //for storing userid
@@ -17,7 +17,8 @@ const Chatbot = () => {
     const [threadids,setThreadIds] = useState([])   // to get all thread ids for a particular usr and assistant
     const [newThread,setNewThread] = useState(false)  // the state to update when click on new chat
     const [inputValue,setInputValue] = useState("")   // to capture input value
-    // const [threadId,setThreadId] = useState("")
+    const [displayMessage,setDisplayMessage] = useState([])
+    const [oldthread,setOldThread]  = useState("")
     let sendMessage = false
     let threadId
     useEffect(()=>{
@@ -57,7 +58,15 @@ const Chatbot = () => {
       // debugger
       sendMessage = true
       if(!newThread){
-        console.log("---------------")
+        console.log('threadId in same thread',oldthread,inputValue)
+        await messages(oldthread,inputValue).then((response)=>{ // passing input message to message api 
+          console.log("in messages in same thread")
+        })
+        console.log('threadId in same thread',oldthread,inputValue)
+        await run(oldthread,selectedAssistant).then((response)=>{
+          console.log("sorted messages in chat js from thread messages",response)
+          setDisplayMessage(response)
+        })
       }
       else if(sendMessage && newThread){
         console.log(sendMessage,newThread)
@@ -69,6 +78,7 @@ const Chatbot = () => {
         await thread().then((response)=>{    // calling thread function to create thread from openai 
           console.log("thread in chatjs",response)
           threadId = response
+          setOldThread(response)
         })
         
         console.log("in chat.js the thread id",threadId)
@@ -78,6 +88,7 @@ const Chatbot = () => {
         })
         await run(threadId,selectedAssistant).then((response)=>{
           console.log("sorted messages in chat js from thread messages",response)
+          setDisplayMessage(response)
         })
         createThread(userId, selectedAssistant, [details]) // Pass an array of details to the backend to store thread id and title
         .then(() => {
@@ -90,10 +101,37 @@ const Chatbot = () => {
         .catch((e) => {
           console.log(e);
         });
+        setNewThread(false)
     }
       
       sendMessage = false
       setInputValue("")
+    }
+    const handleToggleChat = async (id)=>{
+      setOldThread(id)
+      const apiKey = process.env.REACT_APP_API_KEY;
+      console.log("thread id in toggle chat",id)
+      try {
+        const response = await axios.get(`https://api.openai.com/v1/threads/${id}/messages`,
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'OpenAI-Beta': 'assistants=v1',
+          },
+    })
+    console.log("all messages in thread",response.data)
+    const chats = response.data.data.map(chat => ({
+      role: chat.role,
+      message: chat.content[0].text.value,
+    }));
+
+    // console.log(chats);
+    setDisplayMessage(chats.reverse())
+    }catch(error){
+        console.log(error)
+    }
+
     }
     return (
         <div className="container">
@@ -104,7 +142,7 @@ const Chatbot = () => {
             </div>
             <div className="thread-list">
               {threadids.map((threadId,index) => (
-                <div id="sessionBox" key={index}>{threadId.thread_title}</div>
+                <div id="sessionBox" key={index} ><strong onClick={()=>{handleToggleChat(threadId.thread_id)}}>{threadId.thread_title}</strong></div>
               ))}
             </div>
           </div>
@@ -123,7 +161,22 @@ const Chatbot = () => {
               ))}
             </select>
             </div>
+            <div className="right-panel-upper">
+            {displayMessage.map((data, index) => (
             
+        <div key={index} className="chatBox">
+          {data.role === 'user' ? (
+            <>
+              <div>User: {data.message}</div>
+            </>
+          ) : (
+            <>
+              <div>Assistant: {data.message}</div>
+            </>
+          )}
+        </div>
+      ))}
+            </div>
             </div>
             <div className="lower-right">
                 <input type="text" id="query" onChange={(e)=>{setInputValue(e.target.value)}} value={inputValue}/>

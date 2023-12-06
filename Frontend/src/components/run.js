@@ -69,22 +69,7 @@ export const run = async (threadId,assistant_id) => {
         }));
 
         console.log(chats);
-
-        // Separate user and assistant messages
-        const userMessages = [];
-        const assistantMessages = [];
-
-        chats.forEach(message => {
-          if (message.role === 'user') {
-            userMessages.push(message);
-          } else {
-            assistantMessages.push(message);
-          }
-        });
-
-        // Concatenate user and assistant messages
-        let  sortedMessages = userMessages.concat(assistantMessages);
-        return sortedMessages
+        return chats.reverse()
         }catch(error){
             console.log(error)
         }
