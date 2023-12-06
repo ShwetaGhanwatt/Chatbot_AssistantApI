@@ -17,8 +17,9 @@ const Chatbot = () => {
     const [threadids,setThreadIds] = useState([])   // to get all thread ids for a particular usr and assistant
     const [newThread,setNewThread] = useState(false)  // the state to update when click on new chat
     const [inputValue,setInputValue] = useState("")   // to capture input value
-    const [threadId,setThreadId] = useState("")
+    // const [threadId,setThreadId] = useState("")
     let sendMessage = false
+    let threadId
     useEffect(()=>{
       getAllAssistant(userId).then(async (response)=>{
         console.log(response)
@@ -62,12 +63,12 @@ const Chatbot = () => {
         console.log(sendMessage,newThread)
         const words = inputValue.split(' ');
         // Take the first two to three words
-
+        let id
         const capturedWords = words.slice(0, 3).join(' ');
         console.log('Captured words:', capturedWords);
         await thread().then((response)=>{    // calling thread function to create thread from openai 
           console.log("thread in chatjs",response)
-          setThreadId(response)
+          threadId = response
         })
         
         console.log("in chat.js the thread id",threadId)
@@ -76,7 +77,7 @@ const Chatbot = () => {
           console.log("in messages")
         })
         await run(threadId,selectedAssistant).then((response)=>{
-          console.log("in chat js in run ")
+          console.log("sorted messages in chat js from thread messages",response)
         })
         createThread(userId, selectedAssistant, [details]) // Pass an array of details to the backend to store thread id and title
         .then(() => {
